@@ -1,0 +1,1 @@
+xUnit.net creates a new instance of the test class for very each of the test methods.. Therefore, one cannot use fields or properties to share data among test methods which is a bad practice, as our test methods would be dependent to each other which is not acceptable in TDD.
