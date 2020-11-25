@@ -9,48 +9,9 @@ namespace HMSD.EncryptionService.Services
 {
     public class KeyRotatorService : IKeyRotatorService
     {
-        private readonly string initVector;
-        private readonly int keysize;
-        private readonly string passPhrase;
-        private const string secret = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012345678912";
-
-        public KeyRotatorService(IConfiguration config)
-        {
-            try
-            {
-                initVector = config["initVector"];
-                keysize = int.Parse(config["keysize"]);
-                passPhrase = config["passPhrase"];
-            }
-            catch (Exception ex)
-            {
-                throw; //future: caption custom exception
-            }
-        }
+        private const string secret = "0be1d108-0caa-4bc9-8705-5e44f148a65b";
 
         public string GetActiveKey()
-        {          
-            string timepass = GetTimeKey().ToString() + ".ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012345678912";
-
-            byte[] initVectorBytes = Encoding.UTF8.GetBytes(initVector);
-            byte[] plainTextBytes = Encoding.UTF8.GetBytes(timepass);
-            PasswordDeriveBytes password = new PasswordDeriveBytes(passPhrase, null);
-            byte[] keyBytes = password.GetBytes(keysize / 8);
-            RijndaelManaged symmetricKey = new RijndaelManaged();
-            symmetricKey.Mode = CipherMode.CBC;
-            ICryptoTransform encryptor = symmetricKey.CreateEncryptor(keyBytes, initVectorBytes);
-            MemoryStream memoryStream = new MemoryStream();
-            CryptoStream cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write);
-            cryptoStream.Write(plainTextBytes, 0, plainTextBytes.Length);
-            cryptoStream.FlushFinalBlock();
-            byte[] cipherTextBytes = memoryStream.ToArray();
-            memoryStream.Close();
-            cryptoStream.Close();
-            return Convert.ToBase64String(cipherTextBytes);
-
-        }
-
-        public string GetActiveKey2()
         {
             // Getting the bytes of Input String.
             byte[] toEncryptedArray = UTF8Encoding.UTF8.GetBytes(secret);
