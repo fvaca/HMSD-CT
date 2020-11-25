@@ -2,9 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using HMSD.EncryptionService.Model;
-using HMSD.EncryptionService.Services;
-using HMSD.EncryptionService.Services.Interface;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -15,7 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 
-namespace HMSD.EncryptionService
+namespace HMSD.APIGateway
 {
     public class Startup
     {
@@ -29,13 +26,11 @@ namespace HMSD.EncryptionService
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<EncryptorConfig>(Configuration.GetSection("Encryptor"));
-            services.AddScoped<IKeyRotatorService, KeyRotatorService>();
-            services.AddScoped<IEncryptorService, EncryptorService>();
+
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "HMSD.EncryptionService", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "HMSD.APIGateway", Version = "v1" });
             });
         }
 
@@ -46,7 +41,7 @@ namespace HMSD.EncryptionService
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "HMSD.EncryptionService v1"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "HMSD.APIGateway v1"));
             }
 
             app.UseHttpsRedirection();

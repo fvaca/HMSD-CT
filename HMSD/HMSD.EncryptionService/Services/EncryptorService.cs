@@ -18,14 +18,7 @@ namespace HMSD.EncryptionService.Services
 
         public EncryptorService(IOptionsMonitor<EncryptorConfig> configmonitor)
         {
-            try
-            {
-                enconfig = configmonitor.CurrentValue;
-            }
-            catch (Exception ex)
-            {
-                throw; //future: caption custom exception
-            }
+            enconfig = configmonitor.CurrentValue;
         }
 
         public string Decrypt(string secret, string activekey)
