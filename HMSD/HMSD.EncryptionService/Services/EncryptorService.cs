@@ -66,7 +66,7 @@ namespace HMSD.EncryptionService.Services
 
         private string GetTrueKey(string activekey)
         {
-            string SecurityKey = GetTimeKey().ToString() + ".ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012345678912";
+            string SecurityKey = GetTimeKey().ToString() + "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012345678912";
             byte[] toEncryptArray = Convert.FromBase64String(activekey);
             MD5CryptoServiceProvider objMD5CryptoService = new MD5CryptoServiceProvider();
 

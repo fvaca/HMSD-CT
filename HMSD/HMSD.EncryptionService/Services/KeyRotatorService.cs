@@ -9,13 +9,62 @@ namespace HMSD.EncryptionService.Services
 {
     public class KeyRotatorService : IKeyRotatorService
     {
-        private const string secret = "0be1d108-0caa-4bc9-8705-5e44f148a65b";
+        private const string secret = "0be1d1080caa4bc987055e44f148a65b";
 
         public string GetActiveKey()
         {
+            return modeone();
+
+        }
+
+        public string modetwo()
+        {
+            string timepass = GetTimeKey().ToString() + "cABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+            using (AesCryptoServiceProvider myAes = new AesCryptoServiceProvider())
+            {
+
+                byte[] key_iv = Convert.FromBase64String(timepass);
+
+                if (secret == null || secret.Length <= 0)
+                    throw new ArgumentNullException("plainText");
+               
+                byte[] encrypted;
+
+                // Create an AesCryptoServiceProvider object
+                // with the specified key and IV.
+                using (AesCryptoServiceProvider aesAlg = new AesCryptoServiceProvider())
+                {
+                    aesAlg.Key = key_iv;
+                    aesAlg.IV = key_iv;
+
+                    // Create an encryptor to perform the stream transform.
+                    ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
+
+                    // Create the streams used for encryption.
+                    using (MemoryStream msEncrypt = new MemoryStream())
+                    {
+                        using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
+                        {
+                            using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
+                            {
+                                //Write all data to the stream.
+                                swEncrypt.Write(secret);
+                            }
+                            encrypted = msEncrypt.ToArray();
+                        }
+                    }
+                }
+
+                return System.Text.Encoding.UTF8.GetString(encrypted);
+            }
+        }
+
+        public string modeone()
+        {
             // Getting the bytes of Input String.
             byte[] toEncryptedArray = UTF8Encoding.UTF8.GetBytes(secret);
-            string timepass = GetTimeKey().ToString() + ".ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012345678912";
+            string timepass = GetTimeKey().ToString() + "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
             MD5CryptoServiceProvider objMD5CryptoService = new MD5CryptoServiceProvider();
             //Gettting the bytes from the Security Key and Passing it to compute the Corresponding Hash Value.
@@ -37,7 +86,6 @@ namespace HMSD.EncryptionService.Services
             byte[] resultArray = objCrytpoTransform.TransformFinalBlock(toEncryptedArray, 0, toEncryptedArray.Length);
             objTripleDESCryptoService.Clear();
             return Convert.ToBase64String(resultArray, 0, resultArray.Length);
-
         }
 
         private int GetTimeKey()
@@ -56,7 +104,8 @@ namespace HMSD.EncryptionService.Services
             for (int i = 0; i <= last_digit; i++)
             {
                 if (IsFibonacci(i))
-                    nr = i;
+                    nr = (current_time + i) - last_digit;
+
             }
 
             return nr;
