@@ -9,12 +9,22 @@ namespace HMSD.EncryptionService.Services
 {
     public class KeyRotatorService : IKeyRotatorService
     {
-        private const string initVector = "pemgail9uzpgzl88";
-        private const int keysize = 256;
+        private readonly string initVector;
+        private readonly int keysize = 256;
+        private readonly string passPhrase;
 
         public KeyRotatorService(IConfiguration config)
         {
-            config[""]
+            try
+            {
+                initVector = config["initVector"];
+                keysize = int.Parse(config["keysize"]);
+                passPhrase = config["passPhrase"];
+            }
+            catch (Exception ex)
+            {
+                throw; //future: caption custom exception
+            }
         }
 
         public string GetActiveKey()
