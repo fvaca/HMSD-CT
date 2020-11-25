@@ -10,8 +10,9 @@ namespace HMSD.EncryptionService.Services
     public class KeyRotatorService : IKeyRotatorService
     {
         private readonly string initVector;
-        private readonly int keysize = 256;
+        private readonly int keysize;
         private readonly string passPhrase;
+        private const string secret = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012345678912";
 
         public KeyRotatorService(IConfiguration config)
         {
@@ -28,8 +29,7 @@ namespace HMSD.EncryptionService.Services
         }
 
         public string GetActiveKey()
-        {            
-            string passPhrase = "; *-RVcpcjHL <%$k: 7Sta(g < 4W~zj~Y";
+        {          
             string timepass = GetTimeKey().ToString() + ".ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012345678912";
 
             byte[] initVectorBytes = Encoding.UTF8.GetBytes(initVector);
@@ -47,6 +47,35 @@ namespace HMSD.EncryptionService.Services
             memoryStream.Close();
             cryptoStream.Close();
             return Convert.ToBase64String(cipherTextBytes);
+
+        }
+
+        public string GetActiveKey2()
+        {
+            // Getting the bytes of Input String.
+            byte[] toEncryptedArray = UTF8Encoding.UTF8.GetBytes(secret);
+            string timepass = GetTimeKey().ToString() + ".ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012345678912";
+
+            MD5CryptoServiceProvider objMD5CryptoService = new MD5CryptoServiceProvider();
+            //Gettting the bytes from the Security Key and Passing it to compute the Corresponding Hash Value.
+            byte[] securityKeyArray = objMD5CryptoService.ComputeHash(UTF8Encoding.UTF8.GetBytes(timepass));
+            //De-allocatinng the memory after doing the Job.
+            objMD5CryptoService.Clear();
+
+            var objTripleDESCryptoService = new TripleDESCryptoServiceProvider();
+            //Assigning the Security key to the TripleDES Service Provider.
+            objTripleDESCryptoService.Key = securityKeyArray;
+            //Mode of the Crypto service is Electronic Code Book.
+            objTripleDESCryptoService.Mode = CipherMode.ECB;
+            //Padding Mode is PKCS7 if there is any extra byte is added.
+            objTripleDESCryptoService.Padding = PaddingMode.PKCS7;
+
+
+            var objCrytpoTransform = objTripleDESCryptoService.CreateEncryptor();
+            //Transform the bytes array to resultArray
+            byte[] resultArray = objCrytpoTransform.TransformFinalBlock(toEncryptedArray, 0, toEncryptedArray.Length);
+            objTripleDESCryptoService.Clear();
+            return Convert.ToBase64String(resultArray, 0, resultArray.Length);
 
         }
 
