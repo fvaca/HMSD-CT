@@ -13,18 +13,21 @@ namespace HMSD.EncryptionService.Services
 
         public string GetActiveKey()
         {
-            return modeone();
+            return modetwo();
 
         }
 
         public string modetwo()
         {
-            string timepass = GetTimeKey().ToString() + "cABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+            string timekey = GetTimeKey().ToString();
+            string basekey = "qOoqIeUYrQbhfnpHPKe5d9g2Cy0qotifJcP23CIrXlY=";
+            string timekey_basekey = timekey + basekey.Remove(0, timekey.Length);
+            string baseIV = "TeFEzY9O8iRCVRird6GutA==";
+            string timekey_baseIV = timekey + baseIV.Remove(0, timekey.Length);
 
             using (AesCryptoServiceProvider myAes = new AesCryptoServiceProvider())
             {
-
-                byte[] key_iv = Convert.FromBase64String(timepass);
+               
 
                 if (secret == null || secret.Length <= 0)
                     throw new ArgumentNullException("plainText");
@@ -34,9 +37,9 @@ namespace HMSD.EncryptionService.Services
                 // Create an AesCryptoServiceProvider object
                 // with the specified key and IV.
                 using (AesCryptoServiceProvider aesAlg = new AesCryptoServiceProvider())
-                {
-                    aesAlg.Key = key_iv;
-                    aesAlg.IV = key_iv;
+                {                   
+                    aesAlg.Key = Convert.FromBase64String(timekey_basekey);
+                    aesAlg.IV = Convert.FromBase64String(timekey_baseIV);
 
                     // Create an encryptor to perform the stream transform.
                     ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
@@ -56,7 +59,7 @@ namespace HMSD.EncryptionService.Services
                     }
                 }
 
-                return System.Text.Encoding.UTF8.GetString(encrypted);
+                return Convert.ToBase64String(encrypted, 0, encrypted.Length);
             }
         }
 
@@ -64,7 +67,7 @@ namespace HMSD.EncryptionService.Services
         {
             // Getting the bytes of Input String.
             byte[] toEncryptedArray = UTF8Encoding.UTF8.GetBytes(secret);
-            string timepass = GetTimeKey().ToString() + "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+            string timepass = GetTimeKey().ToString() + "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012345678912";
 
             MD5CryptoServiceProvider objMD5CryptoService = new MD5CryptoServiceProvider();
             //Gettting the bytes from the Security Key and Passing it to compute the Corresponding Hash Value.

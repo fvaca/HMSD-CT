@@ -66,6 +66,50 @@ namespace HMSD.EncryptionService.Services
 
         private string GetTrueKey(string activekey)
         {
+            return modetwo(activekey);
+  
+        }
+
+        private string modetwo(string activekey)
+        {
+            string plaintext = null;
+
+            string timekey = GetTimeKey().ToString();
+            string basekey = "qOoqIeUYrQbhfnpHPKe5d9g2Cy0qotifJcP23CIrXlY=";
+            string timekey_basekey = timekey + basekey.Remove(0, timekey.Length);
+            string baseIV = "TeFEzY9O8iRCVRird6GutA==";
+            string timekey_baseIV = timekey + baseIV.Remove(0, timekey.Length);
+
+            byte[] d_activekey = Convert.FromBase64String(activekey);
+            using (AesCryptoServiceProvider aesAlg = new AesCryptoServiceProvider())
+            {                
+                aesAlg.Key = Convert.FromBase64String(timekey_basekey);
+                aesAlg.IV = Convert.FromBase64String(timekey_baseIV);
+
+                // Create a decryptor to perform the stream transform.
+                ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
+
+                // Create the streams used for decryption.
+                using (MemoryStream msDecrypt = new MemoryStream(d_activekey))
+                {
+                    using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
+                    {
+                        using (StreamReader srDecrypt = new StreamReader(csDecrypt))
+                        {
+
+                            // Read the decrypted bytes from the decrypting stream
+                            // and place them in a string.
+                            plaintext = srDecrypt.ReadToEnd();
+                        }
+                    }
+                }
+            }
+
+            return plaintext;
+        }
+
+        private string modeone(string activekey)
+        {
             string SecurityKey = GetTimeKey().ToString() + "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012345678912";
             byte[] toEncryptArray = Convert.FromBase64String(activekey);
             MD5CryptoServiceProvider objMD5CryptoService = new MD5CryptoServiceProvider();
