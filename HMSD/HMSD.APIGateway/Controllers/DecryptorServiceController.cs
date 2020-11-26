@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using HMSD.APIGateway.Model;
 using HMSD.APIGateway.Service.Interface;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -16,14 +17,17 @@ namespace HMSD.APIGateway.Controllers
     [Route("[controller]")]
     public class DecryptorServiceController : ControllerBase
     {
-       
+
+        private readonly ILogger _logger;
         private readonly EncryptionServiceConfig config;
         private readonly IEndpointCallerService service;
 
-        public DecryptorServiceController(IOptionsMonitor<EncryptionServiceConfig> optionsMonitor, IEndpointCallerService endpointcaller)
+        public DecryptorServiceController(IOptionsMonitor<EncryptionServiceConfig> optionsMonitor,
+            IEndpointCallerService endpointcaller, ILogger<DecryptorServiceController> logger)
         {
             config = optionsMonitor.CurrentValue;
             service = endpointcaller;
+            _logger = logger;
         }
         
         [HttpGet]
@@ -31,7 +35,12 @@ namespace HMSD.APIGateway.Controllers
         {
             
             var activekey = service.CallServiceEnpoint(config.BaseUrl, config.KeyRotator);
-            string result = service.CallServiceEnpoint(config.BaseUrl, config.DecryptorEndpoint, $"?secret={secret}&activekey={Uri.EscapeDataString(activekey)}");
+            _logger.LogInformation($"KeyRotator [activekey: {activekey} secret={secret}]");
+
+            string urlparam = $"?secret={secret}&activekey={activekey}";
+            string result = service.CallServiceEnpoint(config.BaseUrl, config.DecryptorEndpoint, $"?secret={secret}&activekey={urlparam}");
+            _logger.LogInformation($"EncryptorEndpoint [activekey: {activekey} secret={secret}]");
+
             return result;
         }
     }

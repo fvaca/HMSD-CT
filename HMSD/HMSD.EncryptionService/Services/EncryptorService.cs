@@ -8,22 +8,25 @@ using Microsoft.Extensions.Configuration;
 using HMSD.EncryptionService.Exceptions;
 using HMSD.EncryptionService.Model;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 
 namespace HMSD.EncryptionService.Services
 {
     public class EncryptorService : IEncryptorService
     {
+        private readonly ILogger _logger;
         private readonly EncryptorConfig enconfig;
-
-
-        public EncryptorService(IOptionsMonitor<EncryptorConfig> configmonitor)
+         
+        public EncryptorService(IOptionsMonitor<EncryptorConfig> configmonitor, ILogger<EncryptorService> logger)
         {
             enconfig = configmonitor.CurrentValue;
+            _logger = logger;
         }
 
         public string Decrypt(string secret, string activekey)
         {
             string passPhrase = GetTrueKey(activekey);
+            _logger.LogInformation($"Encrypt [GetTrueKey: {passPhrase}]");
 
             byte[] initVectorBytes = Encoding.UTF8.GetBytes(enconfig.InitVector);
             byte[] cipherTextBytes = Convert.FromBase64String(secret);
@@ -45,6 +48,7 @@ namespace HMSD.EncryptionService.Services
         {
 
             string passPhrase = GetTrueKey(activekey);
+            _logger.LogInformation($"Encrypt [GetTrueKey: {passPhrase}]");
 
             byte[] initVectorBytes = Encoding.UTF8.GetBytes(enconfig.InitVector);
             byte[] plainTextBytes = Encoding.UTF8.GetBytes(secret);
@@ -85,6 +89,7 @@ namespace HMSD.EncryptionService.Services
             {                
                 aesAlg.Key = Convert.FromBase64String(timekey_basekey);
                 aesAlg.IV = Convert.FromBase64String(timekey_baseIV);
+                aesAlg.Padding = PaddingMode.PKCS7;
 
                 // Create a decryptor to perform the stream transform.
                 ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);

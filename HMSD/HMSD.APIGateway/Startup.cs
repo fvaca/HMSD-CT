@@ -32,7 +32,9 @@ namespace HMSD.APIGateway
             services.Configure<EncryptionServiceConfig>(Configuration.GetSection("EncryptionService"));
             services.AddScoped<IEndpointCallerService, EndpointCallerService>();
 
-            services.AddControllers();
+            services.AddControllers(options => options.Filters.Add(new HttpResponseExceptionFilter()));
+
+            //services.AddControllers();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "HMSD.APIGateway", Version = "v1" });

@@ -40,6 +40,7 @@ namespace HMSD.EncryptionService.Services
                 {                   
                     aesAlg.Key = Convert.FromBase64String(timekey_basekey);
                     aesAlg.IV = Convert.FromBase64String(timekey_baseIV);
+                    aesAlg.Padding = PaddingMode.PKCS7;
 
                     // Create an encryptor to perform the stream transform.
                     ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);

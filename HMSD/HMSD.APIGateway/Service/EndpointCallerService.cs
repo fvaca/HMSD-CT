@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using System.Web;
 using HMSD.APIGateway.Service.Interface;
 using Microsoft.Extensions.Logging;
 
@@ -59,7 +60,7 @@ namespace HMSD.APIGateway.Service
         {            
             using (var httpClient = new HttpClient())
             {
-                using (var response = await httpClient.GetAsync(url+urlparameters))
+                using (var response = await httpClient.GetAsync(HttpUtility.UrlDecode(url+urlparameters)))
                 {
                     string apiResponse = await response.Content.ReadAsStringAsync();
                     return apiResponse;

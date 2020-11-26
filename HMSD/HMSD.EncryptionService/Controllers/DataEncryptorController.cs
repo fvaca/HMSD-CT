@@ -17,7 +17,8 @@ namespace HMSD.EncryptionService.Controllers
         private readonly ILogger _logger;
         private readonly IOptionsMonitor<EncryptorConfig> enconfigmonitor;
         private readonly IEncryptorService service;
-        public DataEncryptorController(IOptionsMonitor<EncryptorConfig> optionsMonitor, IEncryptorService encryptorservice, ILogger<DataEncryptorController> logger)
+        public DataEncryptorController(IOptionsMonitor<EncryptorConfig> optionsMonitor,
+            IEncryptorService encryptorservice, ILogger<DataEncryptorController> logger)
         {
             enconfigmonitor = optionsMonitor;
             service = encryptorservice;
@@ -27,8 +28,10 @@ namespace HMSD.EncryptionService.Controllers
         [HttpGet]
         public string EncryptSecret(string secret, string activekey)
         {
-            _logger.LogInformation($"activekey: {activekey} secret={secret}");
-            return service.Encrypt(secret, activekey);
+
+            _logger.LogInformation($"EncryptSecret [activekey: {activekey} secret={secret}]");
+            var result = service.Encrypt(secret, activekey);
+            return result;
         }
     }
 }

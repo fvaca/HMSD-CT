@@ -14,17 +14,21 @@ namespace HMSD.EncryptionService.Controllers
     [Route("[controller]")]
     public class DataDecryptorController : ControllerBase
     {
+        private readonly ILogger _logger;
         private readonly IOptionsMonitor<EncryptorConfig> enconfigmonitor;
         private readonly IEncryptorService service;
-        public DataDecryptorController(IOptionsMonitor<EncryptorConfig> optionsMonitor, IEncryptorService encryptorservice)
+        public DataDecryptorController(IOptionsMonitor<EncryptorConfig> optionsMonitor,
+            IEncryptorService encryptorservice, ILogger<DataDecryptorController> logger)
         {
             enconfigmonitor = optionsMonitor;
             service = encryptorservice;
+            _logger = logger;
         }
 
         [HttpGet]
         public string DecryptSecret(string secret, string activekey)
         {
+            _logger.LogInformation($"DecryptSecret [activekey: {activekey} secret={secret}]");
             return service.Decrypt(secret, activekey);
         }
     }

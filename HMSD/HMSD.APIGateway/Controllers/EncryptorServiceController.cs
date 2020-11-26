@@ -33,9 +33,12 @@ namespace HMSD.APIGateway.Controllers
         public string Encrypt(string secret)
         {           
             var activekey = service.CallServiceEnpoint(config.BaseUrl, config.KeyRotator);
+            _logger.LogInformation($"KeyRotator [activekey: {activekey} secret={secret}]");
+
             string urlparam = $"?secret={secret}&activekey={activekey}";
             string result = service.CallServiceEnpoint(config.BaseUrl, config.EncryptorEndpoint, urlparam);
-            _logger.LogInformation($"activekey: {activekey} secret={secret}");
+            _logger.LogInformation($"EncryptorEndpoint [activekey: {activekey} secret={secret}]");
+
             return result;
         }
     }
