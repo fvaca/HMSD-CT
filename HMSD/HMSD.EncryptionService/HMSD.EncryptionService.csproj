@@ -15,5 +15,6 @@
     <Folder Include="Services\Interface\" />
     <Folder Include="Exceptions\" />
     <Folder Include="Model\" />
+    <Folder Include="Utils\" />
   </ItemGroup>
 </Project>

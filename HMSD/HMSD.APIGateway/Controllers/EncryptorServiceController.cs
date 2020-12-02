@@ -31,15 +31,25 @@ namespace HMSD.APIGateway.Controllers
 
         [HttpGet]
         public string Encrypt(string secret)
-        {           
-            var activekey = service.CallServiceEnpoint(config.BaseUrl, config.KeyRotator);
-            _logger.LogInformation($"KeyRotator [activekey: {activekey} secret={secret}]");
+        {
+            try
+            {
+                var activekey = service.CallServiceEnpoint(config.BaseUrl, config.KeyRotator);
+                _logger.LogInformation($"KeyRotator [activekey: {activekey} secret={secret}]");
 
-            string urlparam = $"?secret={secret}&activekey={activekey}";
-            string result = service.CallServiceEnpoint(config.BaseUrl, config.EncryptorEndpoint, urlparam);
-            _logger.LogInformation($"EncryptorEndpoint [activekey: {activekey} secret={secret}]");
+                string urlparam = $"?secret={secret}&activekey={activekey}";
+                string result = service.CallServiceEnpoint(config.BaseUrl, config.EncryptorEndpoint, urlparam);
+                _logger.LogInformation($"EncryptorEndpoint [activekey: {activekey} secret={secret}]");
 
-            return result;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                var hex = (HttpResponseException)ex;
+                hex.Status = 500;
+                throw hex;
+            }
+           
         }
     }
 }

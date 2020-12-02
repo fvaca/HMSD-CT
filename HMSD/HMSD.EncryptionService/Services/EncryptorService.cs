@@ -9,7 +9,10 @@ using HMSD.EncryptionService.Exceptions;
 using HMSD.EncryptionService.Model;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
+using HMSD.EncryptionService.Utils;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("HMSD.EncryptionService.Tests")]
 namespace HMSD.EncryptionService.Services
 {
     public class EncryptorService : IEncryptorService
@@ -68,123 +71,38 @@ namespace HMSD.EncryptionService.Services
 
         }
 
-        private string GetTrueKey(string activekey)
-        {
-            return modetwo(activekey);
-  
-        }
-
-        private string modetwo(string activekey)
+        internal static string GetTrueKey(string activekey)
         {
             string plaintext = null;
 
-            string timekey = GetTimeKey().ToString();
-            string basekey = "qOoqIeUYrQbhfnpHPKe5d9g2Cy0qotifJcP23CIrXlY=";
-            string timekey_basekey = timekey + basekey.Remove(0, timekey.Length);
-            string baseIV = "TeFEzY9O8iRCVRird6GutA==";
-            string timekey_baseIV = timekey + baseIV.Remove(0, timekey.Length);
+            string basekey = "uxZ9UHEJNg0eK2a8xN7cFCLlGNdjA+wXsbCkxISX5rI=";
+            string baseIV = "w9rVa3zRassW35ijvC4adw==";
 
-            byte[] d_activekey = Convert.FromBase64String(activekey);
+            string timekey = KeyUtils.GetTimeKey().ToString();
+            string key = timekey + basekey.Remove(0, timekey.Length);
+            string IV = timekey + baseIV.Remove(0, timekey.Length);
+
+            byte[] activekey_64 = Convert.FromBase64String(activekey);
             using (AesCryptoServiceProvider aesAlg = new AesCryptoServiceProvider())
-            {                
-                aesAlg.Key = Convert.FromBase64String(timekey_basekey);
-                aesAlg.IV = Convert.FromBase64String(timekey_baseIV);
+            {
+                aesAlg.Key = Convert.FromBase64String(key);
+                aesAlg.IV = Convert.FromBase64String(IV);
                 aesAlg.Padding = PaddingMode.PKCS7;
 
-                // Create a decryptor to perform the stream transform.
                 ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
-
-                // Create the streams used for decryption.
-                using (MemoryStream msDecrypt = new MemoryStream(d_activekey))
+                
+                using (MemoryStream msDecrypt = new MemoryStream(activekey_64))
                 {
                     using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
                     {
                         using (StreamReader srDecrypt = new StreamReader(csDecrypt))
-                        {
-
-                            // Read the decrypted bytes from the decrypting stream
-                            // and place them in a string.
                             plaintext = srDecrypt.ReadToEnd();
-                        }
                     }
                 }
             }
 
             return plaintext;
-        }
 
-        private string modeone(string activekey)
-        {
-            string SecurityKey = GetTimeKey().ToString() + "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012345678912";
-            byte[] toEncryptArray = Convert.FromBase64String(activekey);
-            MD5CryptoServiceProvider objMD5CryptoService = new MD5CryptoServiceProvider();
-
-            //Gettting the bytes from the Security Key and Passing it to compute the Corresponding Hash Value.
-            byte[] securityKeyArray = objMD5CryptoService.ComputeHash(UTF8Encoding.UTF8.GetBytes(SecurityKey));
-            objMD5CryptoService.Clear();
-
-            var objTripleDESCryptoService = new TripleDESCryptoServiceProvider();
-            //Assigning the Security key to the TripleDES Service Provider.
-            objTripleDESCryptoService.Key = securityKeyArray;
-            //Mode of the Crypto service is Electronic Code Book.
-            objTripleDESCryptoService.Mode = CipherMode.ECB;
-            //Padding Mode is PKCS7 if there is any extra byte is added.
-            objTripleDESCryptoService.Padding = PaddingMode.PKCS7;
-
-            var objCrytpoTransform = objTripleDESCryptoService.CreateDecryptor();
-            //Transform the bytes array to resultArray
-            byte[] resultArray = objCrytpoTransform.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
-            objTripleDESCryptoService.Clear();
-
-            //Convert and return the decrypted data/byte into string format.
-            return UTF8Encoding.UTF8.GetString(resultArray);
-        }
-
-        private int GetTimeKey()
-        {
-            int current_time = DateTimeToTimeKey(DateTime.Now);
-            int last_digit = current_time % 10;
-
-            if (IsFibonacci(last_digit))
-                return current_time;
-
-
-            if (last_digit == 9)
-                return current_time - 1;
-
-            int nr = 0;
-            for (int i = 0; i <= last_digit; i++)
-            {
-                if (IsFibonacci(i))
-                    nr = i;
-            }
-
-            return nr;
-        }
-
-        private static bool IsPerfectSquare(int x)
-        {
-            int s = (int)Math.Sqrt(x);
-            return (s * s == x);
-        }
-
-        private static bool IsFibonacci(int n)
-        {
-            return IsPerfectSquare(5 * n * n + 4) ||
-              IsPerfectSquare(5 * n * n - 4);
-        }
-
-        private static DateTime TimeKeyToDateTime(int unixTimeStamp)
-        {
-            // Unix timestamp is seconds past epoch
-            System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
-            dtDateTime = dtDateTime.AddMinutes(unixTimeStamp).ToLocalTime();
-            return dtDateTime;
-        }
-
-        private static int DateTimeToTimeKey(DateTime datetime)
-        {
-            return (int)(datetime.Subtract(new DateTime(1970, 1, 1))).TotalMinutes;
         }
     }
 }
