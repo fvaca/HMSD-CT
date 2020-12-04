@@ -30,6 +30,7 @@ namespace HMSD.EncryptionService.Controllers
         public IActionResult DecryptSecret(string secret, string activekey)
         {
             activekey = activekey.Replace(" ", "+");
+            secret = secret.Replace(" ", "+");
             _logger.LogInformation($"DecryptSecret [activekey: {activekey}] [secret={secret}]");            
 
             try

@@ -13,4 +13,4 @@ RUN dotnet publish -c Release -o out
 FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/webapi/out ./
-ENTRYPOINT ["dotnet", "HMSD.EncryptionService.dll"]
+ENTRYPOINT ["dotnet", "HMSD.APIGateway.dll"]

@@ -49,7 +49,7 @@ namespace HMSD.EncryptionService
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "HMSD.EncryptionService v1"));
             }
 
-            app.UseHttpsRedirection();
+             app.UseHttpsRedirection();
 
             app.UseRouting();
 

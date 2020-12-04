@@ -37,7 +37,7 @@ namespace HMSD.APIGateway.Service
                     if (response.IsSuccessStatusCode)
                         return apiResponse;
 
-                    throw new HttpResponseException($"CallServiceEnpoint::RunAsync::GetAsync [urlparameters: {urlparameters}]\n" + apiResponse) { Status = (int)response.StatusCode };
+                    throw new HttpResponseException($"|||| CallServiceEnpoint::RunAsync::GetAsync [urlparameters: {urlparameters}] ||| \n" + apiResponse) { Status = (int)response.StatusCode };
                 
                 }
             }

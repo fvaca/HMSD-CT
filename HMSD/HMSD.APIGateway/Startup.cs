@@ -51,8 +51,6 @@ namespace HMSD.APIGateway
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "HMSD.APIGateway v1"));
             }
 
-            app.UseExceptionHandler("/error");
-
             app.UseHttpsRedirection();
 
             app.UseRouting();

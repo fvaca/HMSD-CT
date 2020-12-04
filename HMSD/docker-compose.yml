@@ -1,0 +1,29 @@
+version: '3.4'
+
+services:
+  
+  api-gateway:
+    container_name: APIGateway-api
+    build:
+      context: ./HMSD.APIGateway
+      dockerfile: Dockerfile
+    ports:
+      - "8000:80"
+    depends_on:
+      - encryptor-api
+    networks: 
+      - backend
+
+  encryptor-api:
+    container_name: Encryptor-api
+    build:
+      context: ./HMSD.APIGateway
+      dockerfile: Dockerfile
+    ports:
+      - "8001:80"
+    networks: 
+      - backend
+
+networks:
+   backend:
+      driver: "host"

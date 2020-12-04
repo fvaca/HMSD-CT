@@ -1,16 +1,16 @@
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
-WORKDIR /source
+WORKDIR /app
 
 # copy csproj and restore as distinct layers
 COPY *.csproj .
 RUN dotnet restore
 
-# copy and publish app and libraries
-COPY . .
-RUN dotnet publish -c release -o /app --no-restore
+# copy everything else and build app
+COPY . ./webapi/
+WORKDIR /app/webapi
+RUN dotnet publish -c Release -o out
 
-# final stage/image
-FROM mcr.microsoft.com/dotnet/runtime:5.0
+FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS runtime
 WORKDIR /app
-COPY --from=build /app .
-ENTRYPOINT ["./dotnetapp"]
+COPY --from=build /app/webapi/out ./
+ENTRYPOINT ["dotnet", "HMSD.EncryptionService.dll"]

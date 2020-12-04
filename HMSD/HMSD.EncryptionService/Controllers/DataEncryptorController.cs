@@ -29,7 +29,7 @@ namespace HMSD.EncryptionService.Controllers
         [HttpGet]
         public IActionResult EncryptSecret(string secret, string activekey)
         {
-            activekey = activekey.Replace(" ", "+");
+            activekey = activekey.Replace(" ", "+");           
             _logger.LogInformation($"EncryptSecret [activekey: {activekey}] [secret={secret}]");
 
             try
