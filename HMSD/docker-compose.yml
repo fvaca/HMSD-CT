@@ -11,8 +11,7 @@ services:
       - "8000:80"
     depends_on:
       - encryptor-api
-    networks: 
-      - backend
+
 
   encryptor-api:
     container_name: Encryptor-api
@@ -21,9 +20,3 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8001:80"
-    networks: 
-      - backend
-
-networks:
-   backend:
-      driver: "host"

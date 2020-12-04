@@ -1,2 +1,7 @@
-GET https://localhost:5001/EncryptorService?secret=test
-https://localhost:5001/DecryptorService?secret=PZRIF7csg2mFFaPvjDF84w%3D%3D
+GET http://localhost:8000/EncryptorService?secret=hello HTTP/1.1
+Content-Type: text/plain
+
+#
+
+GET http://localhost:8000//DecryptorService?secret= HTTP/1.1
+Content-Type: text/plain
