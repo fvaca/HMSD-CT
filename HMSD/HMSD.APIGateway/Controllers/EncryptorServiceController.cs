@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using HMSD.APIGateway.Model;
 using HMSD.APIGateway.Service.Interface;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -30,24 +31,29 @@ namespace HMSD.APIGateway.Controllers
         }
 
         [HttpGet]
-        public string Encrypt(string secret)
+        public IActionResult Encrypt(string secret)
         {
             try
             {
                 var activekey = service.CallServiceEnpoint(config.BaseUrl, config.KeyRotator);
-                _logger.LogInformation($"KeyRotator [activekey: {activekey} secret={secret}]");
+                _logger.LogInformation($"KeyRotator [activekey: {activekey}]");
 
                 string urlparam = $"?secret={secret}&activekey={activekey}";
-                string result = service.CallServiceEnpoint(config.BaseUrl, config.EncryptorEndpoint, urlparam);
-                _logger.LogInformation($"EncryptorEndpoint [activekey: {activekey} secret={secret}]");
+                _logger.LogInformation($"EncryptorEndpoint [urlparam: {urlparam}]");
+                string result = service.CallServiceEnpoint(config.BaseUrl, config.EncryptorEndpoint, urlparam);                
 
-                return result;
+                return Ok(result);
             }
-            catch (Exception ex)
+            catch (HttpResponseException ex)
             {
-                var hex = (HttpResponseException)ex;
-                hex.Status = 500;
-                throw hex;
+
+                _logger.LogError($"FAILED: Encrypt - {ex.Message}");
+                return StatusCode(ex.Status, ex.Message);
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError($"FAILED: Encrypt - {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
            
         }

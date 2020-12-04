@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using HMSD.EncryptionService.Services.Interface;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -23,11 +24,21 @@ namespace HMSD.EncryptionService.Controllers
         }
         // GET: api/values
         [HttpGet]
-        public string GetKey()
+        public IActionResult GetKey()
         {
-            var activekey = service.GetActiveKey();
-            _logger.LogInformation($"GetKey [activekey: {activekey}]");
-            return activekey;
+            try
+            {
+                var activekey = service.GetActiveKey();
+                _logger.LogInformation($"GetKey [activekey: {activekey}]");
+                return Ok(activekey);
+            }
+            catch (Exception ex)
+            {
+
+                _logger.LogError($"FAILED: GetKey - {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+           
         }
     }
 }

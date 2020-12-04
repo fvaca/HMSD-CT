@@ -21,8 +21,7 @@ namespace HMSD.EncryptionService.Tests
       
         [Fact]
         public void sEncrypted_EncryptDecryptMessage_WithFiveDifferentKey()
-        {
-            Encoding.UTF8.GetBytes("SaltBytes");
+        {            
             EncryptorConfig enconfig = new EncryptorConfig() { InitVector = "gfedcba9uzpjih88", Keysize = 256 };
             var monitor = Mock.Of<IOptionsMonitor<EncryptorConfig>>(_ => _.CurrentValue == enconfig);
             var logger = Mock.Of<ILogger<EncryptorService>>();

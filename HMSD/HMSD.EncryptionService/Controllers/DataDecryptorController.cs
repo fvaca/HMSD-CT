@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using HMSD.EncryptionService.Model;
 using HMSD.EncryptionService.Services.Interface;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -26,10 +27,21 @@ namespace HMSD.EncryptionService.Controllers
         }
 
         [HttpGet]
-        public string DecryptSecret(string secret, string activekey)
+        public IActionResult DecryptSecret(string secret, string activekey)
         {
-            _logger.LogInformation($"DecryptSecret [activekey: {activekey} secret={secret}]");
-            return service.Decrypt(secret, activekey);
+            activekey = activekey.Replace(" ", "+");
+            _logger.LogInformation($"DecryptSecret [activekey: {activekey}] [secret={secret}]");            
+
+            try
+            {                
+                return Ok(service.Decrypt(secret, activekey));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"FAILED: DecryptSecret - {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+           
         }
     }
 }

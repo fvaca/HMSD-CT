@@ -21,56 +21,31 @@ namespace HMSD.APIGateway.Service
         
         public string CallServiceEnpoint(string baseaddress, string endpoint, string urlparameters = "")
         {
-            var response = RunAsync<string>(baseaddress + endpoint, urlparameters).GetAwaiter().GetResult();            
+            var response = RunAsync<string>(baseaddress + endpoint, urlparameters, _logger).GetAwaiter().GetResult();            
             return response;
 
         }
 
-        //private static HttpClient GetHttpClient(string url)
-        //{
-        //    var client = new HttpClient { BaseAddress = new Uri(url) };
-        //    client.DefaultRequestHeaders.Accept.Clear();
-        //    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        //    return client;
-        //}
-
-        //private static async Task<string> GetAsync<T>(string url, string urlparameters)
-        //{
-        //    try
-        //    {
-        //        using (var client = GetHttpClient(url))
-        //        {
-        //            HttpResponseMessage response = await client.GetAsync(urlparameters);
-        //            if (response.StatusCode == HttpStatusCode.OK)
-        //            {
-        //                var result = await response.Content.ReadAsStringAsync();
-        //                return result;
-        //            }
-
-        //            return string.Empty;
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return string.Empty;
-        //    }
-        //}
-
-        public static async Task<string> GetAsync<T>(string url, string urlparameters)
+        public static async Task<string> GetAsync<T>(string url, string urlparameters, ILogger _logger)
         {            
             using (var httpClient = new HttpClient())
             {
-                using (var response = await httpClient.GetAsync(HttpUtility.UrlDecode(url+urlparameters)))
+                _logger.LogInformation($"CallServiceEnpoint::RunAsync::GetAsync [urlparameters: {urlparameters}]");
+                using (var response = await httpClient.GetAsync(url + urlparameters))
                 {
                     string apiResponse = await response.Content.ReadAsStringAsync();
-                    return apiResponse;
+                    if (response.IsSuccessStatusCode)
+                        return apiResponse;
+
+                    throw new HttpResponseException($"CallServiceEnpoint::RunAsync::GetAsync [urlparameters: {urlparameters}]\n" + apiResponse) { Status = (int)response.StatusCode };
+                
                 }
             }
         }
 
-        public static async Task<string> RunAsync<T>(string url, string urlParameters)
+        public static async Task<string> RunAsync<T>(string url, string urlParameters, ILogger _logger)
         {
-            return await GetAsync<T>(url, urlParameters);
+            return await GetAsync<T>(url, urlParameters, _logger);
         }
 
        

@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using HMSD.APIGateway.Model;
 using HMSD.APIGateway.Service.Interface;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -31,7 +32,7 @@ namespace HMSD.APIGateway.Controllers
         }
         
         [HttpGet]
-        public string Decrypt(string secret)
+        public IActionResult Decrypt(string secret)
         {
             try
             {
@@ -42,16 +43,20 @@ namespace HMSD.APIGateway.Controllers
                 string result = service.CallServiceEnpoint(config.BaseUrl, config.DecryptorEndpoint, $"?secret={secret}&activekey={urlparam}");
                 _logger.LogInformation($"EncryptorEndpoint [activekey: {activekey} secret={secret}]");
 
-                return result;
+                return Ok(result);
+            }
+            catch (HttpResponseException ex)
+            {
+                _logger.LogError($"FAILED: Decrypt - {ex.Message}");
+                return StatusCode(ex.Status, ex.Message);
             }
             catch (Exception ex)
             {
-                var hex = (HttpResponseException)ex;
-                hex.Status = 500;
-                throw hex;
+                _logger.LogError($"FAILED: Decrypt - {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
-            
-            
+
+
         }
     }
 }
