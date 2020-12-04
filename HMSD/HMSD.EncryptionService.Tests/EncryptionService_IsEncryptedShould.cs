@@ -16,9 +16,11 @@ namespace HMSD.EncryptionService.Tests
 {
     public class EncryptionService_IsEncryptedShould
     {
+              
 
+      
         [Fact]
-        public void IsSameTrueKey()
+        public void sEncrypted_EncryptDecryptMessage_WithFiveDifferentKey()
         {
             Encoding.UTF8.GetBytes("SaltBytes");
             EncryptorConfig enconfig = new EncryptorConfig() { InitVector = "gfedcba9uzpjih88", Keysize = 256 };
@@ -28,48 +30,33 @@ namespace HMSD.EncryptionService.Tests
             IKeyRotatorService r_service = new KeyRotatorService();
             IEncryptorService service = new EncryptorService(monitor, logger);
 
-            
-            string activekey = r_service.GetActiveKey();
-            Thread.Sleep(10000);
-            string new_activekey = r_service.GetActiveKey();
 
-            string timekey_En = EncryptorService.GetTrueKey(activekey);
+            string message = "hello World";
+            string original_active_key = r_service.GetActiveKey();
+            string encrypted_message = service.Encrypt(message, original_active_key);
 
-            Assert.NotEqual(activekey, new_activekey);
-            Assert.Equal("0be1d1080caa4bc987055e44f148a65b", timekey_En);
-        }
+            int counter = 0;
+            string new_active_key = original_active_key;
 
-        [Fact]
-        public void IsEncrypted_GivenASecretWaitforNewKey_ReturnsEncryptedSecret()
-        {
-            Encoding.UTF8.GetBytes("SaltBytes");
-            EncryptorConfig enconfig = new EncryptorConfig() { InitVector = "gfedcba9uzpjih88", Keysize = 256 };
-            var monitor = Mock.Of<IOptionsMonitor<EncryptorConfig>>(_ => _.CurrentValue == enconfig);
-            var logger = Mock.Of<ILogger<EncryptorService>>();
-
-            IKeyRotatorService r_service = new KeyRotatorService();
-            IEncryptorService service = new EncryptorService(monitor, logger);
-
-            //act
-            string secret = "hello World";
-            string activekey = r_service.GetActiveKey();
-            string en_result = service.Encrypt(secret, activekey);
-
-            string new_activekey = r_service.GetActiveKey();
-            while (activekey == new_activekey)
+            do
             {
-                Thread.Sleep(3000);
-                new_activekey = r_service.GetActiveKey();
-            }
-            string result = service.Decrypt(en_result, activekey);
+                Thread.Sleep(5000); //wait for a new key
+                new_active_key = r_service.GetActiveKey();
+                if (new_active_key != original_active_key)
+                {
+                    string result = service.Decrypt(encrypted_message, new_active_key);
+                    Assert.NotEqual(original_active_key, new_active_key);
+                    Assert.Equal(message, result);
+                    counter++;
+                }               
 
-            //assert
-            Assert.Equal(secret, result);
+            } while (counter < 5);
+            
         }
 
 
         [Fact]
-        public void IsEncrypted_GivenASecretandSameActiveKey_ReturnsEncryptedSecret()
+        public void IsEncrypted_EncryptDecryptMessage_WithSameKey()
         {
             EncryptorConfig enconfig = new EncryptorConfig() { InitVector = "gfedcba9uzpjih88", Keysize = 256 };
             var monitor = Mock.Of<IOptionsMonitor<EncryptorConfig>>(_ => _.CurrentValue == enconfig);
@@ -79,17 +66,41 @@ namespace HMSD.EncryptionService.Tests
             IEncryptorService service = new EncryptorService(monitor, logger);
 
             //act
-            string secret = "hello World";
-            string activekey = r_service.GetActiveKey();
-            string en_result = service.Encrypt(secret, activekey);
-            string result = service.Decrypt(en_result, activekey);
+            string message = "hello World";
+            string active_key = r_service.GetActiveKey();
+                     
+            string encrypted_message = service.Encrypt(message, active_key);
+            string result = service.Decrypt(encrypted_message, active_key);
 
             //assert
-            Assert.Equal(secret, result);
+            Assert.Equal(message, result);
 
         }
 
-       
+        [Fact]
+        public void IsEncrypted_IsTrueKeyValid()
+        {
+            EncryptorConfig enconfig = new EncryptorConfig() { InitVector = "gfedcba9uzpjih88", Keysize = 256 };
+            var monitor = Mock.Of<IOptionsMonitor<EncryptorConfig>>(_ => _.CurrentValue == enconfig);
+            var logger = Mock.Of<ILogger<EncryptorService>>();
+            var secret = "0be1d1080caa4bc987055e44f148a65b";
+
+            IKeyRotatorService r_service = new KeyRotatorService();
+            IEncryptorService service = new EncryptorService(monitor, logger);
+
+            //act
+            var active_key = r_service.GetActiveKey();
+            var true_key = EncryptorService.GetTrueKey(active_key);
+
+
+            //assert
+            Assert.Equal(secret, true_key);
+
+        }
+
+
+
+
 
 
     }
